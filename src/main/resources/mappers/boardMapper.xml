@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.board2.dao.BoardDao">
+	<select id="maxNum" resultType="int">
+		select nvl(max(num) , 0) from board
+	</select>
+	<insert id="insertData" parameterType="Board">
+	insert into board values(#{num} , #{name} , #{pwd}, #{email} ,
+                             #{subject} , #{content} , #{ipAddr} , 0 , sysdate)
+	</insert>
+	
+	
+	<select id="getDataCount" parameterType="map" resultType="int">
+	select nvl(count(*),0) from board where #{searchKey} like '%' || #{searchValue} || '%'
+	<!-- 문자열을 연결하는 기호 || -->
+	</select>
+	
+	
+	<select id="getLists" parameterType="map" resultType="Board">
+	select * from (
+				select rownum rnum, data.* from (
+    			select num, name, subject , hitcount, to_char(created, 'YYYY-MM-DD')created 
+    			from board
+    			where #{searchKey} like  '%' || #{searchValue} || '%' 
+    			order by num desc
+    			)
+    			data
+		)
+		<![CDATA[
+		where rnum >= #{start) and rnum <= #{end}
+		]]>
+	
+		<!-- mybait 부등호를 사용할때 특수문자로 인식을한다 -->
+		<!-- <![CDATA[를 사용하여 특수문자로인식하는걸 방지한다.]] -->
+	</select>
+</mapper>
